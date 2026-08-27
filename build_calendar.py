@@ -310,6 +310,7 @@ def build_index(count: int, season_name: str, built: datetime) -> str:
            background: #fff; text-align: center; }}
   .button {{ display: inline-block; background: #0d8e38; color: #fff; text-decoration: none;
              padding: .7rem 1.6rem; border-radius: .4rem; font-weight: 600; font-size: 1.1rem; }}
+  .button.google {{ background: #1a56c4; }}
   .plain {{ display: block; color: #5b6157; font-size: .85rem; margin-top: .8rem; }}
   footer {{ color: #5b6157; font-size: .85rem; margin-top: 2rem; }}
   p.note {{ color: #5b6157; font-size: .9rem; }}
@@ -321,14 +322,13 @@ def build_index(count: int, season_name: str, built: datetime) -> str:
      Subscribe once and it keeps itself up to date as the club changes fixtures.</p>
   <div class="card">
     <p><strong>{count} fixtures</strong></p>
-    <p><a class="button" href="calendar.ics" data-subscribe="calendar.ics">Subscribe</a></p>
-    <a class="plain" href="calendar.ics">or download a one-off copy</a>
+    <p><a class="button" href="calendar.ics" data-subscribe="calendar.ics">Add on iPhone</a></p>
+    <p><a class="button google" href="calendar.ics" data-google="calendar.ics">Add to Google Calendar</a></p>
+    <a class="plain" href="calendar.ics">or download a one-off copy (won\'t update)</a>
   </div>
-  <p class="note"><strong>iPhone:</strong> tap <em>Subscribe</em> and confirm. Done.<br>
-     <strong>Android:</strong> the Google Calendar app can\'t add a subscription itself. Either
-     install the free <a href="https://play.google.com/store/apps/details?id=at.bitfire.icsdroid">ICSx&#8309;</a>
-     app and then tap <em>Subscribe</em>, or add it on a computer at calendar.google.com
-     &rarr; Other calendars &rarr; + &rarr; From URL.</p>
+  <p class="note"><strong>Android:</strong> if <em>Add to Google Calendar</em> bounces you into
+     the Calendar app without asking, come back to this page in Chrome, tap <strong>&#8942;</strong>
+     &rarr; <strong>Desktop site</strong>, and try it again.</p>
   <footer>
     Built {built.strftime('%d %b %Y %H:%M')} UTC from the club's
     <a href="{CLUB_URL}">Pitchero site</a>. Unofficial &mdash; not run by the club.
@@ -340,6 +340,12 @@ def build_index(count: int, season_name: str, built: datetime) -> str:
   var base = location.href.replace(/[^/]*$/, "");
   document.querySelectorAll("[data-subscribe]").forEach(function (link) {{
     link.href = (base + link.dataset.subscribe).replace(/^https?:/, "webcal:");
+  }});
+  // Google Calendar's "add a calendar by address" link. Same feed, handed to
+  // Google rather than to the phone's own calendar app.
+  document.querySelectorAll("[data-google]").forEach(function (link) {{
+    link.href = "https://calendar.google.com/calendar/r?cid=" +
+                encodeURIComponent(base + link.dataset.google);
   }});
 </script>
 </body>

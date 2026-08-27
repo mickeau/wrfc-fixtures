@@ -106,11 +106,17 @@ An NTAG213 tag holds about 144 bytes, so this address fits easily.
 ### Which address to put on the tag
 
 - **iPhone** handles `webcal://` properly: one tap, "Subscribe to calendar?", done.
-- **Android** is patchier. The Google Calendar app has no way to add a subscription
-  on the phone at all — it has to be done on a computer at calendar.google.com
-  (**Other calendars → + → From URL**), or with a helper app such as the free
-  [ICSx⁵](https://play.google.com/store/apps/details?id=at.bitfire.icsdroid), which
-  does handle `webcal://` links on the phone.
+  The landing page's *Add on iPhone* button does this.
+- **Android** has no `webcal://` handler built in, so the landing page offers
+  *Add to Google Calendar* instead — a link that hands the feed's address to
+  Google's own "add a calendar by URL" screen. Google then re-checks the feed
+  itself, roughly daily.
+
+  If that link bounces into the Google Calendar app instead of asking, the fallback
+  is Chrome → **⋮** → **Desktop site**, then either tap the button again or go to
+  calendar.google.com → **Other calendars → + → From URL** and paste the address of
+  `calendar.ics`. Both routes put the subscription in the person's Google account,
+  so it follows them to any device they sign into.
 
 If the tag will be tapped by a mix of phones, point it at the landing page instead:
 
@@ -118,8 +124,8 @@ If the tag will be tapped by a mix of phones, point it at the landing page inste
 https://YOUR-USERNAME.github.io/wrfc-fixtures/
 ```
 
-That page has a Subscribe button that builds the `webcal://` address itself, and
-spells out the Android options, so it works reasonably on anything.
+That page carries both buttons and builds the addresses itself, so it works on
+anything without you having to explain which link is which.
 
 ## Changing what's in the calendar
 
