@@ -1,0 +1,56 @@
+name: Update fixtures calendar
+
+on:
+  # Twice a day: 06:20 and 18:20 UTC. (GitHub often runs cron a few minutes late.)
+  schedule:
+    - cron: "20 6,18 * * *"
+  # Lets you run it by hand from the Actions tab.
+  workflow_dispatch:
+  # Rebuild whenever the code changes.
+  push:
+    branches: [main]
+
+# Permissions the deploy-to-Pages step needs.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# If a run is already going, let it finish rather than cancelling it.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Build the calendar
+        run: python build_calendar.py
+
+      - name: Check something was actually built
+        run: |
+          test -s public/calendar.ics
+          grep -q "BEGIN:VEVENT" public/calendar.ics
+          echo "Events in feed: $(grep -c 'BEGIN:VEVENT' public/calendar.ics)"
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
