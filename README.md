@@ -112,11 +112,15 @@ An NTAG213 tag holds about 144 bytes, so this address fits easily.
   Google's own "add a calendar by URL" screen. Google then re-checks the feed
   itself, roughly daily.
 
-  If that link bounces into the Google Calendar app instead of asking, the fallback
-  is Chrome → **⋮** → **Desktop site**, then either tap the button again or go to
-  calendar.google.com → **Other calendars → + → From URL** and paste the address of
-  `calendar.ics`. Both routes put the subscription in the person's Google account,
-  so it follows them to any device they sign into.
+  The address is handed to Google in `webcal://` form. Given `https://`, Google
+  treats the value as a calendar *ID* rather than a feed to go and fetch — it says
+  "calendar was successfully added" and you get an empty calendar.
+
+  If the button doesn't take, the manual route always works: Chrome → **⋮** →
+  **Desktop site** → calendar.google.com → **Other calendars → + → From URL**, and
+  paste the `https://` address of `calendar.ics` there. That form does want
+  `https://`. Both routes put the subscription in the person's Google account, so it
+  follows them to any device they sign into.
 
 If the tag will be tapped by a mix of phones, point it at the landing page instead:
 

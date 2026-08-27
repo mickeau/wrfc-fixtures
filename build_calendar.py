@@ -341,11 +341,13 @@ def build_index(count: int, season_name: str, built: datetime) -> str:
   document.querySelectorAll("[data-subscribe]").forEach(function (link) {{
     link.href = (base + link.dataset.subscribe).replace(/^https?:/, "webcal:");
   }});
-  // Google Calendar's "add a calendar by address" link. Same feed, handed to
-  // Google rather than to the phone's own calendar app.
+  // Google Calendar's "add a calendar by address" link. The address has to be
+  // handed over as webcal:// — given https:// Google takes it for a calendar ID
+  // rather than a feed to fetch, and silently adds an empty calendar.
   document.querySelectorAll("[data-google]").forEach(function (link) {{
-    link.href = "https://calendar.google.com/calendar/r?cid=" +
-                encodeURIComponent(base + link.dataset.google);
+    var feed = (base + link.dataset.google).replace(/^https?:/, "webcal:");
+    link.href = "https://calendar.google.com/calendar/render?cid=" +
+                encodeURIComponent(feed);
   }});
 </script>
 </body>
