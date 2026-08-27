@@ -288,20 +288,13 @@ def build_calendar(fixtures: list[dict], name: str, description: str) -> str:
 # ---------------------------------------------------------------------------
 
 
-def build_index(files: list[tuple[str, str, int]], season_name: str, built: datetime) -> str:
-    """Write a small page listing the feeds, with one-tap subscribe links.
+def build_index(count: int, season_name: str, built: datetime) -> str:
+    """Write a small page with a one-tap subscribe link.
 
-    The subscribe links are filled in by a few lines of JavaScript, because the
+    The subscribe link is filled in by a few lines of JavaScript, because the
     page has no way of knowing its own published address until it is opened.
     """
-    rows = "\n".join(
-        f"""      <li>
-        <p class="feed"><strong>{html.escape(label)}</strong> &middot; {count} fixtures</p>
-        <p><a class="button" href="{name}" data-subscribe="{name}">Subscribe</a>
-           <a class="plain" href="{name}">download a one-off copy</a></p>
-      </li>"""
-        for label, name, count in files
-    )
+    teams = " and ".join(TEAMS_WANTED) if len(TEAMS_WANTED) < 3 else ", ".join(TEAMS_WANTED)
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -313,34 +306,35 @@ def build_index(files: list[tuple[str, str, int]], season_name: str, built: date
          max-width: 34rem; padding: 2rem 1.25rem; line-height: 1.55; color: #14200f;
          background: #fbfbf8; }}
   h1 {{ color: #0d8e38; margin-bottom: .25rem; font-size: 1.6rem; }}
-  ul {{ list-style: none; padding: 0; }}
-  li {{ border: 1px solid #dcdcd2; border-radius: .6rem; padding: 1rem; margin: .8rem 0;
-        background: #fff; }}
-  .feed {{ margin: 0 0 .6rem; }}
+  .card {{ border: 1px solid #dcdcd2; border-radius: .6rem; padding: 1.2rem; margin: 1.2rem 0;
+           background: #fff; text-align: center; }}
   .button {{ display: inline-block; background: #0d8e38; color: #fff; text-decoration: none;
-             padding: .55rem 1.1rem; border-radius: .4rem; font-weight: 600; }}
-  .plain {{ color: #5b6157; font-size: .85rem; margin-left: .6rem; }}
+             padding: .7rem 1.6rem; border-radius: .4rem; font-weight: 600; font-size: 1.1rem; }}
+  .plain {{ display: block; color: #5b6157; font-size: .85rem; margin-top: .8rem; }}
   footer {{ color: #5b6157; font-size: .85rem; margin-top: 2rem; }}
   p.note {{ color: #5b6157; font-size: .9rem; }}
 </style>
 </head>
 <body>
   <h1>Withycombe RFC fixtures</h1>
-  <p>Live calendar feeds for the {html.escape(season_name.strip())}. Subscribe once and the
-     fixtures keep themselves up to date as the club changes them.</p>
-  <ul>
-{rows}
-  </ul>
-  <p class="note">On an iPhone, <em>Subscribe</em> adds a calendar that refreshes itself.
-     On Android, Google Calendar can only add a subscription from a computer:
-     go to calendar.google.com &rarr; Other calendars &rarr; + &rarr; From URL, and paste the
-     download link.</p>
+  <p>{html.escape(teams)} fixtures for the {html.escape(season_name.strip())}, in one calendar.
+     Subscribe once and it keeps itself up to date as the club changes fixtures.</p>
+  <div class="card">
+    <p><strong>{count} fixtures</strong></p>
+    <p><a class="button" href="calendar.ics" data-subscribe="calendar.ics">Subscribe</a></p>
+    <a class="plain" href="calendar.ics">or download a one-off copy</a>
+  </div>
+  <p class="note"><strong>iPhone:</strong> tap <em>Subscribe</em> and confirm. Done.<br>
+     <strong>Android:</strong> the Google Calendar app can\'t add a subscription itself. Either
+     install the free <a href="https://play.google.com/store/apps/details?id=at.bitfire.icsdroid">ICSx&#8309;</a>
+     app and then tap <em>Subscribe</em>, or add it on a computer at calendar.google.com
+     &rarr; Other calendars &rarr; + &rarr; From URL.</p>
   <footer>
     Built {built.strftime('%d %b %Y %H:%M')} UTC from the club's
     <a href="{CLUB_URL}">Pitchero site</a>. Unofficial &mdash; not run by the club.
   </footer>
 <script>
-  // Turn each Subscribe link into a webcal:// address for this page's own
+  // Turn the Subscribe link into a webcal:// address for this page's own
   // location, so calendar apps treat it as a live subscription rather than a
   // one-off download.
   var base = location.href.replace(/[^/]*$/, "");
@@ -365,7 +359,6 @@ def main() -> int:
     print(f"Club {club['name']} (id {club['id']}), season {season['name'].strip()} (id {season['id']})")
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    written: list[tuple[str, str, int]] = []
     everything: list[dict] = []
 
     for team in teams:
@@ -378,24 +371,16 @@ def main() -> int:
         )
         everything += playable
 
-        slug = team["name"].lower().replace(" ", "-")
-        filename = f"{slug}.ics"
-        (OUTPUT_DIR / filename).write_text(
-            build_calendar(playable, f"Withycombe RFC {team['name']}", f"Withycombe RFC {team['name']} fixtures."),
-            encoding="utf-8",
-        )
-        written.append((f"Withycombe {team['name']}", filename, len(playable)))
-
+    # One feed, holding every team listed in TEAMS_WANTED.
     (OUTPUT_DIR / "calendar.ics").write_text(
         build_calendar(everything, CALENDAR_NAME, CALENDAR_DESC), encoding="utf-8"
     )
-    written.insert(0, ("All teams", "calendar.ics", len(everything)))
-
     (OUTPUT_DIR / "index.html").write_text(
-        build_index(written, season["name"], datetime.now(timezone.utc)), encoding="utf-8"
+        build_index(len(everything), season["name"], datetime.now(timezone.utc)),
+        encoding="utf-8",
     )
 
-    print(f"Wrote {len(written)} calendar files plus index.html to {OUTPUT_DIR}")
+    print(f"Wrote calendar.ics ({len(everything)} fixtures) and index.html to {OUTPUT_DIR}")
     return 0
 
 

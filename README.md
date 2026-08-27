@@ -8,10 +8,8 @@ Feeds produced:
 
 | File | What's in it |
 |------|--------------|
-| `calendar.ics` | 1st XV and 2nd XV together |
-| `1st-xv.ics` | 1st XV only |
-| `2nd-xv.ics` | 2nd XV only |
-| `index.html` | A small page listing the above, so a tag can point at one address |
+| `calendar.ics` | 1st XV and 2nd XV, in one calendar |
+| `index.html` | A page with a Subscribe button, so a tag can point at one address |
 
 Unofficial — this is not run by the club.
 
@@ -71,8 +69,6 @@ minute. When it goes green, your files are live at:
 ```
 https://YOUR-USERNAME.github.io/wrfc-fixtures/
 https://YOUR-USERNAME.github.io/wrfc-fixtures/calendar.ics
-https://YOUR-USERNAME.github.io/wrfc-fixtures/1st-xv.ics
-https://YOUR-USERNAME.github.io/wrfc-fixtures/2nd-xv.ics
 ```
 
 Open the first one in a browser to check it looks right.
@@ -110,9 +106,11 @@ An NTAG213 tag holds about 144 bytes, so this address fits easily.
 ### Which address to put on the tag
 
 - **iPhone** handles `webcal://` properly: one tap, "Subscribe to calendar?", done.
-- **Android** is patchier — many phones don't know what to do with `webcal://`, and
-  Google Calendar can only add subscriptions on a computer at
-  calendar.google.com (**Other calendars → + → From URL**).
+- **Android** is patchier. The Google Calendar app has no way to add a subscription
+  on the phone at all — it has to be done on a computer at calendar.google.com
+  (**Other calendars → + → From URL**), or with a helper app such as the free
+  [ICSx⁵](https://play.google.com/store/apps/details?id=at.bitfire.icsdroid), which
+  does handle `webcal://` links on the phone.
 
 If the tag will be tapped by a mix of phones, point it at the landing page instead:
 
@@ -120,8 +118,8 @@ If the tag will be tapped by a mix of phones, point it at the landing page inste
 https://YOUR-USERNAME.github.io/wrfc-fixtures/
 ```
 
-That page lists all three feeds with links, and explains the `webcal://` trick, so
-it works reasonably on anything.
+That page has a Subscribe button that builds the `webcal://` address itself, and
+spells out the Android options, so it works reasonably on anything.
 
 ## Changing what's in the calendar
 
@@ -130,7 +128,8 @@ Open `build_calendar.py` — the settings are at the top, under
 
 - **Add a team**: add its name to `TEAMS_WANTED`, spelled exactly as it appears on
   the club site, e.g. `["1st XV", "2nd XV", "Colts"]`. The available names are
-  1st XV, 2nd XV, Walking Rugby, Ladies, Colts, and the junior age groups.
+  1st XV, 2nd XV, Walking Rugby, Ladies, Colts, and the junior age groups. Every
+  team listed goes into the single `calendar.ics`.
 - **Match length** (default 2 hours): `MATCH_LENGTH`.
 - **Ground details**: `HOME_GROUND` and `HOME_GEO`.
 
