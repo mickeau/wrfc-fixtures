@@ -106,21 +106,25 @@ An NTAG213 tag holds about 144 bytes, so this address fits easily.
 ### Which address to put on the tag
 
 - **iPhone** handles `webcal://` properly: one tap, "Subscribe to calendar?", done.
-  The landing page's *Add on iPhone* button does this.
-- **Android** has no `webcal://` handler built in, so the landing page offers
-  *Add to Google Calendar* instead — a link that hands the feed's address to
-  Google's own "add a calendar by URL" screen. Google then re-checks the feed
-  itself, roughly daily.
+  The landing page's *Add to my calendar* button does exactly this.
+- **Android** has no `webcal://` handler and the Google Calendar app cannot add a
+  subscription at all. The only way to subscribe is Google's full desktop site,
+  which is reachable from the phone: Chrome → **⋮** → **Desktop site** →
+  calendar.google.com → **Other calendars → + → From URL** → paste the `https://`
+  address of `calendar.ics`. Then, in the Google Calendar app, **☰ → Settings →**
+  the new calendar **→ Sync on** — subscriptions arrive switched off, and nothing
+  appears until that is turned on.
 
-  The address is handed to Google in `webcal://` form. Given `https://`, Google
-  treats the value as a calendar *ID* rather than a feed to go and fetch — it says
-  "calendar was successfully added" and you get an empty calendar.
+  The landing page spells all of this out step by step, with a Copy button for the
+  address.
 
-  If the button doesn't take, the manual route always works: Chrome → **⋮** →
-  **Desktop site** → calendar.google.com → **Other calendars → + → From URL**, and
-  paste the `https://` address of `calendar.ics` there. That form does want
-  `https://`. Both routes put the subscription in the person's Google account, so it
-  follows them to any device they sign into.
+  There is also a one-tap *Download the fixtures* option on the page for Android,
+  clearly marked as **not** a subscription: it puts today's fixtures in the calendar
+  and they never change again.
+
+Avoid Google's `calendar.google.com/calendar/render?cid=…` deep link. Given an
+`https://` address it reports "calendar was successfully added" and subscribes to
+nothing; it was tried here and removed.
 
 If the tag will be tapped by a mix of phones, point it at the landing page instead:
 
@@ -128,8 +132,8 @@ If the tag will be tapped by a mix of phones, point it at the landing page inste
 https://YOUR-USERNAME.github.io/wrfc-fixtures/
 ```
 
-That page carries both buttons and builds the addresses itself, so it works on
-anything without you having to explain which link is which.
+That page lays out the routes for each type of phone and builds the addresses
+itself, so you don't have to explain any of it.
 
 ## Changing what's in the calendar
 

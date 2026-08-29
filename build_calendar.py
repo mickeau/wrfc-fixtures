@@ -289,10 +289,12 @@ def build_calendar(fixtures: list[dict], name: str, description: str) -> str:
 
 
 def build_index(count: int, season_name: str, built: datetime) -> str:
-    """Write a small page with a one-tap subscribe link.
+    """Write the page people land on when they tap the tag or the link.
 
-    The subscribe link is filled in by a few lines of JavaScript, because the
-    page has no way of knowing its own published address until it is opened.
+    Two routes, stated plainly, because they behave differently: a one-tap
+    download that never changes again, and a proper subscription that does.
+    The addresses are filled in by a few lines of JavaScript, since the page has
+    no way of knowing where it is published until someone opens it.
     """
     teams = " and ".join(TEAMS_WANTED) if len(TEAMS_WANTED) < 3 else ", ".join(TEAMS_WANTED)
     return f"""<!doctype html>
@@ -303,51 +305,95 @@ def build_index(count: int, season_name: str, built: datetime) -> str:
 <title>Withycombe RFC fixtures calendar</title>
 <style>
   body {{ font-family: system-ui, -apple-system, "Segoe UI", sans-serif; margin: 0 auto;
-         max-width: 34rem; padding: 2rem 1.25rem; line-height: 1.55; color: #14200f;
+         max-width: 34rem; padding: 2rem 1.25rem 3rem; line-height: 1.55; color: #14200f;
          background: #fbfbf8; }}
   h1 {{ color: #0d8e38; margin-bottom: .25rem; font-size: 1.6rem; }}
-  .card {{ border: 1px solid #dcdcd2; border-radius: .6rem; padding: 1.2rem; margin: 1.2rem 0;
-           background: #fff; text-align: center; }}
+  h2 {{ font-size: 1.05rem; margin: 0 0 .2rem; }}
+  .card {{ border: 1px solid #dcdcd2; border-radius: .6rem; padding: 1.1rem 1.2rem;
+           margin: 1.1rem 0; background: #fff; }}
+  .card.best {{ border-color: #0d8e38; border-width: 2px; }}
+  .verdict {{ font-size: .85rem; font-weight: 600; margin: 0 0 .8rem; }}
+  .yes {{ color: #0d6d2e; }}
+  .no {{ color: #a3401a; }}
   .button {{ display: inline-block; background: #0d8e38; color: #fff; text-decoration: none;
-             padding: .7rem 1.6rem; border-radius: .4rem; font-weight: 600; font-size: 1.1rem; }}
-  .button.google {{ background: #1a56c4; }}
-  .plain {{ display: block; color: #5b6157; font-size: .85rem; margin-top: .8rem; }}
+             padding: .65rem 1.4rem; border-radius: .4rem; font-weight: 600; }}
+  .button.grey {{ background: #55605a; }}
+  ol {{ padding-left: 1.3rem; margin: .6rem 0 0; }}
+  li {{ margin-bottom: .55rem; }}
+  .address {{ display: flex; gap: .5rem; align-items: center; margin: .5rem 0 0; }}
+  code {{ background: #f0f0e8; padding: .35rem .5rem; border-radius: .3rem; font-size: .8rem;
+          word-break: break-all; flex: 1; }}
+  button.copy {{ font: inherit; font-size: .8rem; padding: .35rem .7rem; border: 1px solid #b9bdb2;
+                 background: #fff; border-radius: .3rem; cursor: pointer; white-space: nowrap; }}
   footer {{ color: #5b6157; font-size: .85rem; margin-top: 2rem; }}
-  p.note {{ color: #5b6157; font-size: .9rem; }}
 </style>
 </head>
 <body>
   <h1>Withycombe RFC fixtures</h1>
-  <p>{html.escape(teams)} fixtures for the {html.escape(season_name.strip())}, in one calendar.
-     Subscribe once and it keeps itself up to date as the club changes fixtures.</p>
-  <div class="card">
-    <p><strong>{count} fixtures</strong></p>
-    <p><a class="button" href="calendar.ics" data-subscribe="calendar.ics">Add on iPhone</a></p>
-    <p><a class="button google" href="calendar.ics" data-google="calendar.ics">Add to Google Calendar</a></p>
-    <a class="plain" href="calendar.ics">or download a one-off copy (won\'t update)</a>
+  <p>{html.escape(teams)} fixtures for the {html.escape(season_name.strip())} &mdash;
+     {count} matches, in one calendar.</p>
+
+  <div class="card best">
+    <h2>iPhone or iPad</h2>
+    <p class="verdict yes">&#10003; Subscribes &mdash; updates itself when fixtures change</p>
+    <p><a class="button" href="calendar.ics" data-subscribe="calendar.ics">Add to my calendar</a></p>
   </div>
-  <p class="note"><strong>Android:</strong> if <em>Add to Google Calendar</em> bounces you into
-     the Calendar app without asking, come back to this page in Chrome, tap <strong>&#8942;</strong>
-     &rarr; <strong>Desktop site</strong>, and try it again.</p>
+
+  <div class="card best">
+    <h2>Android &mdash; the proper way</h2>
+    <p class="verdict yes">&#10003; Subscribes &mdash; updates itself when fixtures change</p>
+    <p>Google Calendar can only take a subscription through its full desktop site. You
+       can reach that on the phone &mdash; it just needs one setting turned on first.</p>
+    <ol>
+      <li>In <strong>Chrome</strong>, tap the <strong>&#8942;</strong> menu (top right) and
+          tick <strong>Desktop site</strong>.</li>
+      <li>Go to <strong>calendar.google.com</strong>. It will load small &mdash; pinch to
+          zoom into the left-hand column.</li>
+      <li>Scroll down that column to <strong>Other calendars</strong> and tap the
+          <strong>+</strong> beside it.</li>
+      <li>Choose <strong>From URL</strong>.</li>
+      <li>Paste the address below, then tap <strong>Add calendar</strong>.
+        <div class="address"><code id="feed">calendar.ics</code>
+          <button class="copy" type="button" id="copy">Copy</button></div>
+      </li>
+      <li>Open the <strong>Google Calendar app</strong> &rarr; <strong>&#9776;</strong> &rarr;
+          <strong>Settings</strong>, find <em>Withycombe RFC</em> in the list, and turn on
+          <strong>Sync</strong>. New calendars arrive switched off, so this step is easy to
+          miss and nothing shows without it.</li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h2>Android &mdash; the quick way</h2>
+    <p class="verdict no">&#10007; Does <strong>not</strong> subscribe &mdash; a snapshot of
+       today's fixtures that will never update</p>
+    <p>Your phone will offer to add these fixtures to your calendar in one go. Fine if you
+       just want the dates in front of you, but any later change at the club &mdash; a
+       postponement, a kick-off time confirmed &mdash; will never reach you.</p>
+    <p><a class="button grey" href="calendar.ics">Download the fixtures</a></p>
+  </div>
+
   <footer>
     Built {built.strftime('%d %b %Y %H:%M')} UTC from the club's
     <a href="{CLUB_URL}">Pitchero site</a>. Unofficial &mdash; not run by the club.
   </footer>
 <script>
-  // Turn the Subscribe link into a webcal:// address for this page's own
-  // location, so calendar apps treat it as a live subscription rather than a
-  // one-off download.
   var base = location.href.replace(/[^/]*$/, "");
+  // iPhone: webcal:// is what makes a calendar app subscribe rather than download.
   document.querySelectorAll("[data-subscribe]").forEach(function (link) {{
     link.href = (base + link.dataset.subscribe).replace(/^https?:/, "webcal:");
   }});
-  // Google Calendar's "add a calendar by address" link. The address has to be
-  // handed over as webcal:// — given https:// Google takes it for a calendar ID
-  // rather than a feed to fetch, and silently adds an empty calendar.
-  document.querySelectorAll("[data-google]").forEach(function (link) {{
-    var feed = (base + link.dataset.google).replace(/^https?:/, "webcal:");
-    link.href = "https://calendar.google.com/calendar/render?cid=" +
-                encodeURIComponent(feed);
+  // Google's "From URL" box wants the plain https:// address.
+  var feed = document.getElementById("feed");
+  feed.textContent = base + "calendar.ics";
+  document.getElementById("copy").addEventListener("click", function () {{
+    var self = this;
+    navigator.clipboard.writeText(feed.textContent).then(function () {{
+      self.textContent = "Copied";
+      setTimeout(function () {{ self.textContent = "Copy"; }}, 2000);
+    }}).catch(function () {{
+      self.textContent = "Select it and copy";
+    }});
   }});
 </script>
 </body>
